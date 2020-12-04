@@ -7,6 +7,7 @@ use App\Http\Resources\Product\ProductCollection;
 use App\Http\Resources\Product\ProductResource;
 use App\Models\Product;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class ProductController extends Controller
 {
@@ -40,6 +41,7 @@ class ProductController extends Controller
         $product->stock = $request->stock;
         $product->price = $request->price;
         $product->discount = $request->discount;
+        $product->user_id = Auth::id();
         $product->save();
 
         return response(['data' => new ProductResource($product)], 201);
@@ -70,6 +72,9 @@ class ProductController extends Controller
      */
     public function update(Request $request, Product $product)
     {
+        if (Auth::id() !== $product->user_id) {
+            return response()->json(['errors' => 'Product Doesnt belongs to user'],);
+        }
         $request['detail'] = $request->description;
         unset($request['description']);
         $product->update($request->all());
